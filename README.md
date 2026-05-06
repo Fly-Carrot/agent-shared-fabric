@@ -1,12 +1,26 @@
 # Agent Shared Fabric
 
-**Agent Shared Fabric** is a governance layer for multi-agent work.
+[![Release](https://img.shields.io/github/v/release/Fly-Carrot/agent-shared-fabric?label=release)](https://github.com/Fly-Carrot/agent-shared-fabric/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Runtime](https://img.shields.io/badge/runtimes-Codex%20%7C%20Gemini%20%7C%20Antigravity-blue)](#runtime-contract)
+[![Hooks](https://img.shields.io/badge/hooks-preflight%20%7C%20phase%20%7C%20postflight-8A2BE2)](#how-it-actually-works)
+[![中文](https://img.shields.io/badge/README-%E4%B8%AD%E6%96%87-red)](README.zh-CN.md)
+
+**Agent Shared Fabric** turns scattered AI coding agents into a coordinated working system with shared memory, shared tool routing, auditable receipts, and a repeatable task discipline.
 
 It gives Codex, Gemini CLI, Antigravity, Maestro, MCP tools, local skills, and future agent runtimes one shared operating contract without forcing them into one monolithic app.
 
+In practical terms, it helps you:
+
+- make agent memory more durable than chat history
+- keep handoffs, decisions, open loops, and process learnings reusable across runtimes
+- route tools consistently through MCP, skills, workflows, and subagents
+- make complex work safer through preflight, six-stage discipline, and postflight
+- feed downstream knowledge systems such as Fabric App, Obsidian, wiki indexes, and graph views with clean receipts instead of private runtime guesses
+
 The core idea is simple:
 
-> Agents should share discipline, receipts, memory lanes, tool registries, and workflow state. Apps should consume those outputs, not become the source of truth.
+> Agents should share discipline, memory lanes, tool registries, workflow state, and receipts. Apps should consume those outputs, not become the source of truth.
 
 ## Why This Exists
 
@@ -103,14 +117,14 @@ flowchart LR
   Runtime --> Preflight --> SyncAll --> Context
   Context --> Rules --> SixStage
   Context --> Registries --> SixStage
-  SixStage --> Runtime
-  Runtime --> Postflight --> Memory
+  SixStage --> Postflight
+  Postflight --> Memory
   Memory --> Receipts
   Receipts --> FabricApp[Fabric App\nMonitor / Wiki / Graph / Terminal]
   Memory --> Runtime
 ```
 
-The important direction is postflight first, then memory lanes. Receipts are generated from durable memory state and can be consumed by Fabric App. Memory lanes also feed the next runtime session directly, so continuation does not depend on the app.
+The important direction is discipline first, then postflight. A runtime does not simply finish a task and forget it; the six-stage workflow flows into postflight, postflight writes memory lanes, receipts are generated from durable memory state, and Fabric App can consume those receipts. Memory lanes also feed the next runtime session directly, so continuation does not depend on the app.
 
 ## Fixed Core vs Custom Extensions
 
