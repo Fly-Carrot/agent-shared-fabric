@@ -329,18 +329,18 @@ def main() -> int:
         directory.mkdir(parents=True, exist_ok=True)
 
     template_map = {
-        "templates/rules/global/agent-shared-fabric.md": root / "rules/global/agent-shared-fabric.md",
-        "templates/layout/agent-shared-fabric.tree": root / "LAYOUT.tree",
-        "templates/hooks/before-task.sh": root / "hooks/before-task.sh",
-        "templates/hooks/log-phase.sh": root / "hooks/log-phase.sh",
-        "templates/hooks/after-task.sh": root / "hooks/after-task.sh",
-        "templates/sync/boot-sequence.md": root / "sync/boot-sequence.md",
-        "templates/sync/runtime-map.example.yaml": root / "sync/runtime-map.yaml",
-        "templates/mcp/servers.example.yaml": root / "mcp/servers.yaml",
-        "templates/skills/sources.example.yaml": root / "skills/sources.yaml",
-        "templates/workflows/sources.example.yaml": root / "workflows/sources.yaml",
-        "templates/memory/schema.example.yaml": root / "memory/schema.yaml",
-        "templates/projects/registry.example.yaml": root / "projects/registry.yaml",
+        "templates/governance-core/rules/global/agent-shared-fabric.md": root / "rules/global/agent-shared-fabric.md",
+        "templates/governance-core/layout/agent-shared-fabric.tree": root / "LAYOUT.tree",
+        "templates/governance-core/hooks/before-task.sh": root / "hooks/before-task.sh",
+        "templates/governance-core/hooks/log-phase.sh": root / "hooks/log-phase.sh",
+        "templates/governance-core/hooks/after-task.sh": root / "hooks/after-task.sh",
+        "templates/governance-core/sync/boot-sequence.md": root / "sync/boot-sequence.md",
+        "templates/governance-core/sync/runtime-map.example.yaml": root / "sync/runtime-map.yaml",
+        "templates/governance-core/mcp/servers.example.yaml": root / "mcp/servers.yaml",
+        "templates/governance-core/skills/sources.example.yaml": root / "skills/sources.yaml",
+        "templates/governance-core/workflows/sources.example.yaml": root / "workflows/sources.yaml",
+        "templates/governance-core/memory/schema.example.yaml": root / "memory/schema.yaml",
+        "templates/governance-core/projects/registry.example.yaml": root / "projects/registry.yaml",
     }
     for src_rel, dst in template_map.items():
         if args.force or not dst.exists():

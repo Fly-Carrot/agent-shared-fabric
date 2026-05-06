@@ -55,7 +55,7 @@ AGENT_NAME=codex \
 
 Report `[BOOT_OK]` only after the hook succeeds. See [Quickstart](docs/quickstart.md) for the complete runnable path.
 
-The generated layout is documented in [Root Layout](templates/layout/agent-shared-fabric.tree), and a runtime-agnostic startup prompt is available in [Generic Startup Snippet](docs/generic-startup-snippet.md).
+The generated layout is documented in [Root Layout](templates/governance-core/layout/agent-shared-fabric.tree), and a runtime-agnostic startup prompt is available in [Generic Startup Snippet](docs/generic-startup-snippet.md).
 
 ## Two Separate Systems
 

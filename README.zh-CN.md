@@ -221,4 +221,4 @@ memory lanes -> next agent runtime
 - [Generic Startup Snippet](docs/generic-startup-snippet.md)
 - [Department Routing](docs/department-routing.md)
 - [Customization Guide](docs/customization-guide.md)
-- [Root Layout](templates/layout/agent-shared-fabric.tree)
+- [Root Layout](templates/governance-core/layout/agent-shared-fabric.tree)

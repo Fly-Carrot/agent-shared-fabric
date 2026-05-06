@@ -19,7 +19,7 @@ AgentSharedFabric/
   agent-fabric-implementation/      # customizable tool body
 ```
 
-The same structure is included as a template at `templates/layout/agent-shared-fabric.tree`. The initializer also copies it to `global-agent-fabric/LAYOUT.tree` so users can inspect the intended two-layer model after installation.
+The same structure is included as a template at `templates/governance-core/layout/agent-shared-fabric.tree`. The initializer also copies it to `global-agent-fabric/LAYOUT.tree` so users can inspect the intended two-layer model after installation.
 
 The initializer writes:
 
