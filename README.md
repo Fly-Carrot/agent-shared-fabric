@@ -20,6 +20,35 @@ Most agent systems fail in the quiet places:
 
 Agent Shared Fabric treats coordination itself as infrastructure.
 
+## Quick Start
+
+Create a local governance root plus a parallel implementation body:
+
+```bash
+python3 scripts/init_agent_shared_fabric.py \
+  --root ~/AgentSharedFabric/global-agent-fabric \
+  --implementation-root ~/AgentSharedFabric/agent-fabric-implementation \
+  --workspace /path/to/your/workspace
+```
+
+Then boot a runtime:
+
+```bash
+python3 ~/AgentSharedFabric/global-agent-fabric/scripts/sync/preflight_check.py \
+  --global-root ~/AgentSharedFabric/global-agent-fabric \
+  --workspace /path/to/your/workspace \
+  --agent codex
+
+python3 ~/AgentSharedFabric/global-agent-fabric/scripts/sync/sync_all.py \
+  --global-root ~/AgentSharedFabric/global-agent-fabric \
+  --workspace /path/to/your/workspace \
+  --agent codex
+```
+
+Report `[BOOT_OK]` only after both scripts succeed.
+
+See [Quickstart](docs/quickstart.md) for the complete runnable path.
+
 ## Two Separate Systems
 
 Agent Shared Fabric and Fabric App are deliberately separate.
@@ -119,6 +148,24 @@ flowchart TB
 ```
 
 The brain stays small, inspectable, and portable. Heavy implementations live in external bodies and are referenced through registries.
+
+See [Extension Body Model](docs/extension-body-model.md).
+
+## How It Actually Works
+
+Agent Shared Fabric can be activated through prompts, hooks, or both.
+
+- **Prompt mode**: paste the generated startup snippet into a runtime session.
+- **Hook mode**: run boot scripts before work and postflight scripts after work.
+- **Hybrid mode**: use hooks for enforcement and prompts for model-visible discipline.
+
+The full loop is:
+
+```text
+preflight_check -> sync_all -> context loading -> phase logs -> postflight_sync
+```
+
+See [Hooks And Prompts](docs/hooks-and-prompts.md) and [Preflight And Postflight](docs/preflight-postflight.md).
 
 ## Memory Model
 
