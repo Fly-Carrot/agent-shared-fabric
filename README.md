@@ -6,21 +6,21 @@
 [![Hooks](https://img.shields.io/badge/hooks-preflight%20%7C%20phase%20%7C%20postflight-8A2BE2)](#how-it-actually-works)
 [![中文](https://img.shields.io/badge/README-%E4%B8%AD%E6%96%87-red)](README.zh-CN.md)
 
-**Agent Shared Fabric** turns scattered AI coding agents into a coordinated working system with shared memory, shared tool routing, auditable receipts, and a repeatable task discipline.
+**Agent Shared Fabric** turns scattered AI coding agents into a coordinated working system with **shared memory**, **shared tool routing**, **auditable receipts**, and a **repeatable task discipline**.
 
-It gives Codex, Gemini CLI, Antigravity, Maestro, MCP tools, local skills, and future agent runtimes one shared operating contract without forcing them into one monolithic app.
+It gives **Codex**, **Gemini CLI**, **Antigravity**, **Maestro**, **MCP tools**, local skills, and future agent runtimes **one shared operating contract** without forcing them into one monolithic app.
 
 In practical terms, it helps you:
 
-- make agent memory more durable than chat history
-- keep handoffs, decisions, open loops, and process learnings reusable across runtimes
-- route tools consistently through MCP, skills, workflows, and subagents
-- make complex work safer through preflight, six-stage discipline, and postflight
-- feed downstream knowledge systems such as Fabric App, Obsidian, wiki indexes, and graph views with clean receipts instead of private runtime guesses
+- make **agent memory more durable than chat history**
+- keep **handoffs, decisions, open loops, and process learnings** reusable across runtimes
+- route tools consistently through **MCP, skills, workflows, and subagents**
+- make complex work safer through **preflight, six-stage discipline, and postflight**
+- feed downstream knowledge systems such as **Fabric App, Obsidian, wiki indexes, and graph views** with **clean receipts** instead of private runtime guesses
 
 The core idea is simple:
 
-> Agents should share discipline, memory lanes, tool registries, workflow state, and receipts. Apps should consume those outputs, not become the source of truth.
+> Agents should share **discipline, memory lanes, tool registries, workflow state, and receipts**. Apps should consume those outputs, **not become the source of truth**.
 
 ## Why This Exists
 
@@ -32,7 +32,7 @@ Most agent systems fail in the quiet places:
 - complex work skips planning, review, dispatch, and postflight
 - dashboards look useful but are not backed by canonical receipts
 
-Agent Shared Fabric treats coordination itself as infrastructure.
+Agent Shared Fabric treats **coordination itself as infrastructure**.
 
 ## Quick Start
 
@@ -94,7 +94,7 @@ It can read:
 - wiki indexes
 - semantic graph data
 
-But the app should not be the canonical governance brain. It is a UI, monitor, and knowledge workbench layered on top.
+But the app should **not** be the canonical governance brain. It is a **UI, monitor, and knowledge workbench** layered on top.
 
 ## Architecture At A Glance
 
@@ -124,11 +124,11 @@ flowchart LR
   Memory --> Runtime
 ```
 
-The important direction is discipline first, then postflight. A runtime does not simply finish a task and forget it; the six-stage workflow flows into postflight, postflight writes memory lanes, receipts are generated from durable memory state, and Fabric App can consume those receipts. Memory lanes also feed the next runtime session directly, so continuation does not depend on the app.
+The important direction is **discipline first, then postflight**. A runtime does not simply finish a task and forget it; the **six-stage workflow flows into postflight**, postflight writes **memory lanes**, receipts are generated from durable memory state, and Fabric App can consume those receipts. Memory lanes also feed the next runtime session directly, so **continuation does not depend on the app**.
 
 ## Fixed Core vs Custom Extensions
 
-Agent Shared Fabric has one fixed core and many optional extension bodies.
+Agent Shared Fabric has **one fixed core** and **many optional extension bodies**.
 
 **Fixed core:**
 
@@ -136,7 +136,7 @@ Agent Shared Fabric has one fixed core and many optional extension bodies.
 preflight -> sync_all -> context loading -> six-stage phase logging -> postflight -> memory lanes -> receipts
 ```
 
-This core should remain stable across users and runtimes.
+This core should remain **stable across users and runtimes**.
 
 **Strongly recommended integrations:**
 
@@ -152,7 +152,7 @@ This core should remain stable across users and runtimes.
 - domain registries
 - runtime-specific mirrors
 
-Custom extensions are discovered through registries during preflight/sync-all. They should not be hardcoded into the governance brain. See [Customization Guide](docs/customization-guide.md).
+Custom extensions are discovered through **registries during preflight/sync-all**. They should **not** be hardcoded into the governance brain. See [Customization Guide](docs/customization-guide.md).
 
 ## The Six Stages
 
@@ -184,7 +184,7 @@ flowchart TB
   External --> Runtime
 ```
 
-The internal fabric says **how work is governed**. External tools say **what capabilities are available**. This keeps the framework portable while allowing each user to attach their own MCP servers, skills, workflows, and agents.
+The internal fabric says **how work is governed**. External tools say **what capabilities are available**. This keeps the framework **portable** while allowing each user to attach their own **MCP servers, skills, workflows, and agents**.
 
 See [Extension Body Model](docs/extension-body-model.md).
 
