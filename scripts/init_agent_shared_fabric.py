@@ -29,6 +29,9 @@ from pathlib import Path
 
 REQUIRED = [
     "rules/global/agent-shared-fabric.md",
+    "hooks/before-task.sh",
+    "hooks/log-phase.sh",
+    "hooks/after-task.sh",
     "sync/runtime-map.yaml",
     "sync/boot-sequence.md",
     "mcp/servers.yaml",
@@ -224,9 +227,9 @@ def main() -> int:
         append_ndjson(root / "memory" / "user-question-profiles.ndjson", {**base, "type": "user_question_profile", **profile})
         writes["user_question_profiles"] += 1
 
+    writes["receipts"] += 1
     receipt = {**base, "type": "session_end", "summary": args.summary, "status_marker": "[SYNC_OK]", "writes": writes}
     append_ndjson(root / "sync" / "receipts.ndjson", receipt)
-    writes["receipts"] += 1
     print(json.dumps({"status": "written", "status_marker": "[SYNC_OK]", "writes": writes}, indent=2))
     return 0
 
@@ -253,18 +256,20 @@ def render_startup_snippet(root: Path, workspace: Path) -> str:
     return f"""Use `{root}` as the canonical Agent Shared Fabric root.
 You are operating in workspace `{workspace}`.
 
-Before substantial work, run exactly:
-- `python3 {root / 'scripts/sync/preflight_check.py'} --global-root {root} --workspace {workspace} --agent <runtime>`
-- `python3 {root / 'scripts/sync/sync_all.py'} --global-root {root} --workspace {workspace} --agent <runtime>`
+Before substantial work, run the generated boot hook:
 
-Report `[BOOT_OK]` only after both scripts succeed.
+`WORKSPACE="{workspace}" AGENT_NAME=<runtime> "{root / 'hooks/before-task.sh'}"`
+
+The hook runs preflight and sync-all. Report `[BOOT_OK]` only after it succeeds.
 Load global context first, runtime bridge second, project overlay third.
 
-For complex work, log exact phases with:
-`python3 {root / 'scripts/sync/log_task_phase.py'} --global-root {root} --workspace {workspace} --agent <runtime> --phase <route|plan|review|dispatch|execute|report> --note "..."`
+For complex work, log exact phases with the generated phase hook:
 
-At the end, write back through:
-`python3 {root / 'scripts/sync/postflight_sync.py'} --global-root {root} --workspace {workspace} --agent <runtime> --summary "..." --user-question-profile-json '{{...}}'`
+`WORKSPACE="{workspace}" AGENT_NAME=<runtime> "{root / 'hooks/log-phase.sh'}" <route|plan|review|dispatch|execute|report> "..."`
+
+At the end, write back through the generated postflight hook:
+
+`WORKSPACE="{workspace}" AGENT_NAME=<runtime> SUMMARY="..." USER_QUESTION_PROFILE_JSON='{{...}}' "{root / 'hooks/after-task.sh'}"`
 
 Report `[SYNC_OK]` only after postflight succeeds.
 """
@@ -290,6 +295,7 @@ def main() -> int:
         root / "memory",
         root / "projects",
         root / "sync",
+        root / "hooks",
         root / "scripts/sync",
         body / "skills/curated",
         body / "skills/local",
@@ -302,6 +308,9 @@ def main() -> int:
 
     template_map = {
         "templates/rules/global/agent-shared-fabric.md": root / "rules/global/agent-shared-fabric.md",
+        "templates/hooks/before-task.sh": root / "hooks/before-task.sh",
+        "templates/hooks/log-phase.sh": root / "hooks/log-phase.sh",
+        "templates/hooks/after-task.sh": root / "hooks/after-task.sh",
         "templates/sync/boot-sequence.md": root / "sync/boot-sequence.md",
         "templates/sync/runtime-map.example.yaml": root / "sync/runtime-map.yaml",
         "templates/mcp/servers.example.yaml": root / "mcp/servers.yaml",
@@ -328,6 +337,14 @@ This root is intentionally parallel to the governance root.
 
 Put heavy implementations here: skills, MCP servers, global workflows, and custom subagents.
 Reference them from the governance root through YAML registries instead of copying them into the governance brain.
+
+Recommended extension points:
+
+- Add MCP servers in `{root / 'mcp/servers.yaml'}`
+- Add skill repositories in `{root / 'skills/sources.yaml'}`
+- Add workflow prompt directories in `{root / 'workflows/sources.yaml'}`
+- Add custom subagents in this implementation root and route them through Maestro or the runtime bridge
+- Keep secrets in environment variables, not in registries
 """)
 
     if workspace:
@@ -346,8 +363,7 @@ Startup snippet: `.agents/agent-shared-fabric/startup-snippet.md`
         "implementation_root": str(body),
         "workspace": str(workspace) if workspace else None,
         "next_boot": [
-            f"python3 {root / 'scripts/sync/preflight_check.py'} --global-root {root} --workspace {workspace or '<workspace>'} --agent codex",
-            f"python3 {root / 'scripts/sync/sync_all.py'} --global-root {root} --workspace {workspace or '<workspace>'} --agent codex",
+            f"WORKSPACE=\"{workspace or '<workspace>'}\" AGENT_NAME=codex \"{root / 'hooks/before-task.sh'}\"",
         ],
     }
     print(json.dumps(summary, indent=2))

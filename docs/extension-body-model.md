@@ -1,14 +1,15 @@
 # Extension Body Model
 
-Agent Shared Fabric uses a parallel-folder model.
+Agent Shared Fabric uses a parallel-folder model: a fixed internal fabric plus customizable external tool bodies.
 
-## Governance Brain
+## Internal Fabric
 
 The governance root contains light, inspectable state:
 
 ```text
 global-agent-fabric/
   rules/
+  hooks/
   mcp/servers.yaml
   skills/sources.yaml
   workflows/sources.yaml
@@ -18,11 +19,23 @@ global-agent-fabric/
   scripts/sync/
 ```
 
-It describes what should happen.
+It describes how work is governed.
 
-## Implementation Body
+The fixed internal fabric includes:
 
-The implementation root contains heavy executable capability:
+- preflight
+- sync-all
+- context loading order
+- six-stage phase logging
+- postflight
+- memory lanes
+- receipts
+- user-question-profile distillation
+- prompt and hook contracts
+
+## External Tools
+
+The implementation body contains heavy executable capability:
 
 ```text
 agent-fabric-implementation/
@@ -32,14 +45,43 @@ agent-fabric-implementation/
   agents/
 ```
 
-It does the work.
+It provides what the runtime can do.
 
-## Why Separate Them
+External tools can include:
 
-This gives the system two useful properties:
+- MCP servers
+- local skill repositories
+- curated skill bundles
+- workflow prompts
+- custom subagents
+- domain-specific registries
 
-- the governance layer stays portable and reviewable
-- implementations can grow, change, or be swapped without rewriting the control plane
+## Runtime Shape
+
+```mermaid
+flowchart TB
+  API[APIs / Workflows / Runtime Commands]
+  Runtime[Agent Runtime]
+  Internal[Internal Fabric\nFixed Governance Core]
+  External[External Tools\nMCP / Skills / Agents / Workflows]
+
+  API --> Runtime
+  Runtime --> Internal
+  Runtime --> External
+  Internal --> Runtime
+  External --> Runtime
+```
+
+The runtime sits between the fixed fabric and the user's tools. It obeys the fabric and calls tools through registries.
+
+## Recommended Integrations
+
+Two integrations are strongly recommended, but not mandatory:
+
+- **MemPalace**: process memory and deep trial-and-error recall.
+- **Maestro**: explicit subagent orchestration with a human approval gate.
+
+Other tools should be added by the user through registries rather than copied into the core framework.
 
 ## Registry References
 
@@ -48,6 +90,6 @@ The governance brain points to the body through registries:
 - `skills/sources.yaml` points to skill folders
 - `mcp/servers.yaml` points to MCP server entrypoints
 - `workflows/sources.yaml` points to reusable workflow prompts
-- `runtime-map.yaml` points to generated runtime mirrors
+- `sync/runtime-map.yaml` points to generated runtime mirrors
 
-This is the "plugin" model: structure and function are separated, but connected by explicit routes.
+This is the plugin model: structure and function are separated, but connected by explicit routes.

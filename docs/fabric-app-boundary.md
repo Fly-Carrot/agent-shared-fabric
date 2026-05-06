@@ -22,12 +22,13 @@ It is the UI and knowledge management layer.
 
 Agent Shared Fabric produces:
 
+- memory lanes
 - receipts
 - phase logs
-- memory lanes
 - registries
 - runtime mirrors
 - project overlays
+- user-question-profile distillation
 
 Fabric App consumes:
 
@@ -38,4 +39,11 @@ Fabric App consumes:
 - graph JSON for visualization
 - terminal access for maintenance
 
-Fabric App should not own canonical agent governance.
+The correct flow is:
+
+```text
+Agent Runtime -> Postflight Sync -> Memory Lanes -> Receipts + Phase Logs -> Fabric App
+                                    -> Memory Lanes -> Next Agent Runtime
+```
+
+Fabric App should not own canonical agent governance. If the app disappears, the next agent should still continue from the memory lanes and project bridge.

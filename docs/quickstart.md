@@ -15,8 +15,8 @@ This creates two sibling roots:
 
 ```text
 AgentSharedFabric/
-  global-agent-fabric/              # governance brain
-  agent-fabric-implementation/      # implementation body
+  global-agent-fabric/              # fixed governance core
+  agent-fabric-implementation/      # customizable tool body
 ```
 
 The initializer writes:
@@ -26,34 +26,26 @@ The initializer writes:
 - memory schema
 - boot sequence
 - runnable sync scripts
+- runnable hook wrappers
 - optional workspace `AGENTS.md`
 - optional startup snippet
 
-## Verify Boot
+## Verify Boot With The Hook
 
 ```bash
-python3 ~/AgentSharedFabric/global-agent-fabric/scripts/sync/preflight_check.py \
-  --global-root ~/AgentSharedFabric/global-agent-fabric \
-  --workspace /path/to/your/workspace \
-  --agent codex
-
-python3 ~/AgentSharedFabric/global-agent-fabric/scripts/sync/sync_all.py \
-  --global-root ~/AgentSharedFabric/global-agent-fabric \
-  --workspace /path/to/your/workspace \
-  --agent codex
+WORKSPACE=/path/to/your/workspace \
+AGENT_NAME=codex \
+~/AgentSharedFabric/global-agent-fabric/hooks/before-task.sh
 ```
 
-Only after both commands succeed should an agent report `[BOOT_OK]`.
+Only after this succeeds should an agent report `[BOOT_OK]`.
 
 ## Log A Six-Stage Task
 
 ```bash
-python3 ~/AgentSharedFabric/global-agent-fabric/scripts/sync/log_task_phase.py \
-  --global-root ~/AgentSharedFabric/global-agent-fabric \
-  --workspace /path/to/your/workspace \
-  --agent codex \
-  --phase route \
-  --note "Classify task and choose workflow."
+WORKSPACE=/path/to/your/workspace \
+AGENT_NAME=codex \
+~/AgentSharedFabric/global-agent-fabric/hooks/log-phase.sh route "Classify task and choose workflow."
 ```
 
 Use the exact phase keys:
@@ -65,20 +57,19 @@ route -> plan -> review -> dispatch -> execute -> report
 ## Write Postflight
 
 ```bash
-python3 ~/AgentSharedFabric/global-agent-fabric/scripts/sync/postflight_sync.py \
-  --global-root ~/AgentSharedFabric/global-agent-fabric \
-  --workspace /path/to/your/workspace \
-  --agent codex \
-  --summary "Completed the task." \
-  --decision "Use Agent Shared Fabric as canonical governance." \
-  --user-question-profile-json '{
-    "focus_points": ["agent coordination"],
-    "question_patterns": ["asks for concrete implementation"],
-    "response_preferences": ["concise but operational"],
-    "reasoning_preferences": ["verify real files"],
-    "recurring_themes": ["shared fabric"],
-    "frictions_or_anxieties": ["agents may skip discipline"]
-  }'
+WORKSPACE=/path/to/your/workspace \
+AGENT_NAME=codex \
+SUMMARY="Completed the task." \
+DECISION="Use Agent Shared Fabric as canonical governance." \
+USER_QUESTION_PROFILE_JSON='{
+  "focus_points": ["agent coordination"],
+  "question_patterns": ["asks for concrete implementation"],
+  "response_preferences": ["concise but operational"],
+  "reasoning_preferences": ["verify real files"],
+  "recurring_themes": ["shared fabric"],
+  "frictions_or_anxieties": ["agents may skip discipline"]
+}' \
+~/AgentSharedFabric/global-agent-fabric/hooks/after-task.sh
 ```
 
 Only after this succeeds should an agent report `[SYNC_OK]`.

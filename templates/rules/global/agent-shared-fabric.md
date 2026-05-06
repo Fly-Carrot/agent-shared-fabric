@@ -2,10 +2,20 @@
 
 Use the configured Agent Shared Fabric root as canonical.
 
+## Fixed Core
+
+The fixed operating flow is:
+
+```text
+preflight -> sync_all -> context loading -> phase logging -> postflight -> memory lanes -> receipts
+```
+
+Do not replace this with ad-hoc summaries or direct writes.
+
 Before substantial work:
 
-1. run preflight
-2. run sync-all
+1. run `hooks/before-task.sh` when available
+2. otherwise run preflight and sync-all directly
 3. load global context
 4. load runtime bridge
 5. load project overlay
@@ -22,6 +32,20 @@ execute
 report
 ```
 
-Do not write directly to memory or sync logs. Use canonical scripts.
+## Dispatch Order
 
-At the end of substantial work, run postflight sync and report `[SYNC_OK]` only after success.
+When a task needs external capability, choose in this order:
+
+1. MCP server
+2. curated/local skill
+3. indexed external skill library
+4. Maestro or native subagent orchestration
+5. manual script fallback
+
+## Custom Extensions
+
+MCP servers, skills, workflows, custom subagents, and domain registries are customizable extension bodies. Register them through YAML registries. Do not hardcode private tools into the governance core.
+
+MemPalace is strongly recommended for process memory. Maestro is strongly recommended for explicit subagent orchestration. Neither is required for the core contract to run.
+
+At the end of substantial work, run `hooks/after-task.sh` when available, include user-question-profile distillation, and report `[SYNC_OK]` only after success.

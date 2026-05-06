@@ -31,23 +31,15 @@ python3 scripts/init_agent_shared_fabric.py \
   --workspace /path/to/your/workspace
 ```
 
-Then boot a runtime:
+Then boot a runtime through the generated hook:
 
 ```bash
-python3 ~/AgentSharedFabric/global-agent-fabric/scripts/sync/preflight_check.py \
-  --global-root ~/AgentSharedFabric/global-agent-fabric \
-  --workspace /path/to/your/workspace \
-  --agent codex
-
-python3 ~/AgentSharedFabric/global-agent-fabric/scripts/sync/sync_all.py \
-  --global-root ~/AgentSharedFabric/global-agent-fabric \
-  --workspace /path/to/your/workspace \
-  --agent codex
+WORKSPACE=/path/to/your/workspace \
+AGENT_NAME=codex \
+~/AgentSharedFabric/global-agent-fabric/hooks/before-task.sh
 ```
 
-Report `[BOOT_OK]` only after both scripts succeed.
-
-See [Quickstart](docs/quickstart.md) for the complete runnable path.
+Report `[BOOT_OK]` only after the hook succeeds. See [Quickstart](docs/quickstart.md) for the complete runnable path.
 
 ## Two Separate Systems
 
@@ -101,23 +93,50 @@ flowchart LR
     Rules[Rules]
     Registries[Registries\nMCP / Skills / Workflows / Projects]
     SixStage[Six-Stage Discipline\nroute -> plan -> review -> dispatch -> execute -> report]
-    Memory[Memory Lanes\nDecision / Handoff / Loop / Learning / Process]
-    Receipts[Receipts + Phase Logs]
     Postflight[Postflight Sync]
+    Memory[Memory Lanes\nDecision / Handoff / Loop / Learning / Process / Profile]
+    Receipts[Receipts + Phase Logs]
   end
 
   Runtime --> Preflight --> SyncAll --> Context
-  Context --> Rules
-  Context --> Registries
-  Rules --> SixStage
-  Registries --> SixStage
+  Context --> Rules --> SixStage
+  Context --> Registries --> SixStage
   SixStage --> Runtime
   Runtime --> Postflight --> Memory
-  Postflight --> Receipts
-
+  Memory --> Receipts
   Receipts --> FabricApp[Fabric App\nMonitor / Wiki / Graph / Terminal]
-  Memory --> FabricApp
+  Memory --> Runtime
 ```
+
+The important direction is postflight first, then memory lanes. Receipts are generated from durable memory state and can be consumed by Fabric App. Memory lanes also feed the next runtime session directly, so continuation does not depend on the app.
+
+## Fixed Core vs Custom Extensions
+
+Agent Shared Fabric has one fixed core and many optional extension bodies.
+
+**Fixed core:**
+
+```text
+preflight -> sync_all -> context loading -> six-stage phase logging -> postflight -> memory lanes -> receipts
+```
+
+This core should remain stable across users and runtimes.
+
+**Strongly recommended integrations:**
+
+- **MemPalace** for process memory and detailed trial-and-error recall.
+- **Maestro** for explicit subagent orchestration and human-gated delegation.
+
+**Custom extensions:**
+
+- MCP servers
+- skill repositories
+- workflow prompts
+- custom subagents
+- domain registries
+- runtime-specific mirrors
+
+Custom extensions are discovered through registries during preflight/sync-all. They should not be hardcoded into the governance brain. See [Customization Guide](docs/customization-guide.md).
 
 ## The Six Stages
 
@@ -127,42 +146,52 @@ Agent Shared Fabric uses six exact stage keys:
 route -> plan -> review -> dispatch -> execute -> report
 ```
 
-These are inspired by staged governance patterns such as 三省六部: separate routing, planning, review, delegation, execution, and final reporting so agents do not silently jump from intention to mutation.
+This staged discipline is inspired by the governance pattern in [cft0808/edict](https://github.com/cft0808/edict), especially the idea of separating classification, planning, review, dispatch, execution, and report-back. Agent Shared Fabric is not affiliated with edict and is not a fork; it borrows the operating principle of staged responsibility.
+
+See [Department Routing](docs/department-routing.md) for the runtime meaning of each phase.
 
 ## Brain / Body Separation
 
-Agent Shared Fabric separates **governance brain** from **implementation body**.
+Agent Shared Fabric separates the fixed internal fabric from external implementation tools.
 
 ```mermaid
 flowchart TB
-  Brain[Governance Brain\nRules / Registries / Sync Scripts / Memory Schemas]
-  Body[Implementation Body\nSkills / MCP Servers / Workflows / Subagents]
-  Runtime[Agent Runtimes]
-  App[Apps and Workstations]
+  API[APIs / Workflows / Runtime Commands]
+  Runtime[Agent Runtime\nCodex / Gemini / Antigravity]
+  Internal[Internal Fabric\nRules / Boot Hooks / Postflight / Memory Lanes / Phase Discipline]
+  External[External Tools\nMCP / Skills / Custom Subagents / Domain Workflows]
 
-  Brain --> Runtime
-  Brain --> Body
-  Body --> Runtime
-  Runtime --> Brain
-  Brain --> App
+  API --> Runtime
+  Runtime --> Internal
+  Runtime --> External
+  Internal --> Runtime
+  External --> Runtime
 ```
 
-The brain stays small, inspectable, and portable. Heavy implementations live in external bodies and are referenced through registries.
+The internal fabric says **how work is governed**. External tools say **what capabilities are available**. This keeps the framework portable while allowing each user to attach their own MCP servers, skills, workflows, and agents.
 
 See [Extension Body Model](docs/extension-body-model.md).
 
 ## How It Actually Works
 
-Agent Shared Fabric can be activated through prompts, hooks, or both.
+Agent Shared Fabric is activated through a hybrid of prompts and hooks.
 
-- **Prompt mode**: paste the generated startup snippet into a runtime session.
-- **Hook mode**: run boot scripts before work and postflight scripts after work.
-- **Hybrid mode**: use hooks for enforcement and prompts for model-visible discipline.
+- **Prompt contract**: model-visible instructions that tell the runtime what root, workspace, phases, and write-back rules to follow.
+- **Hook contract**: executable wrappers that enforce boot, phase logging, and postflight.
+- **Registry contract**: YAML files that route MCP, skills, workflows, projects, and runtime mirrors.
 
-The full loop is:
+Recommended loop:
 
 ```text
-preflight_check -> sync_all -> context loading -> phase logs -> postflight_sync
+before-task hook -> startup prompt -> phase hook(s) -> after-task hook
+```
+
+The generated hooks are:
+
+```text
+hooks/before-task.sh
+hooks/log-phase.sh
+hooks/after-task.sh
 ```
 
 See [Hooks And Prompts](docs/hooks-and-prompts.md) and [Preflight And Postflight](docs/preflight-postflight.md).
@@ -195,7 +224,7 @@ A runtime should not begin substantial work until it has:
 
 At the end of substantial work it should:
 
-1. write postflight records through canonical scripts
+1. write postflight records through canonical scripts or the generated after-task hook
 2. include user-question-profile distillation
 3. report `[SYNC_OK]` only after success
 
@@ -211,10 +240,10 @@ It can route orchestration through:
 - curated/local skills
 - scripted fallback
 
-Recommended order:
+Recommended dispatch order:
 
 ```text
-MCP first -> curated/local skills -> indexed external skills -> manual script
+MCP first -> curated/local skills -> indexed external skills -> Maestro/native subagents -> manual script
 ```
 
 For complex work, Maestro or equivalent orchestration can be used as the delegation layer, while human approval remains the execution gate.
@@ -247,6 +276,7 @@ This public concept repository contains:
 - sanitized templates
 - example registries
 - runtime bridge patterns
+- hook wrappers
 - security guidance
 
 It intentionally does **not** contain:
@@ -257,9 +287,3 @@ It intentionally does **not** contain:
 - Fabric App source code
 - generated app releases
 - raw agent conversation history
-
-## Status
-
-This is the architecture-first public extraction of a working local system.
-
-Fabric App is intentionally kept private until the Agent Shared Fabric concept is established clearly on its own.
