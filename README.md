@@ -210,6 +210,20 @@ hooks/log-phase.sh
 hooks/after-task.sh
 ```
 
+### Runtime Chain
+
+The chain is deliberately split by responsibility:
+
+| Layer | Responsibility | Examples |
+| --- | --- | --- |
+| **Prompt** | Makes the operating contract visible to the model | startup snippet, runtime bridge instructions |
+| **Hook** | Forces critical lifecycle actions to actually run | before-task, log-phase, after-task |
+| **Registry** | Tells the runtime what capabilities exist | MCP servers, skills, workflows, projects |
+| **MCP / Skill / Maestro** | Performs specialized work during dispatch | tools, local skills, subagents, orchestration |
+| **Memory lanes + receipts** | Preserve continuity across sessions and runtimes | decisions, handoffs, open loops, process memory |
+
+So continuous collaboration is **not only hooks** and **not only skills**. Hooks enforce the lifecycle; skills and MCP provide capabilities; memory lanes and receipts carry state forward.
+
 See [Hooks And Prompts](docs/hooks-and-prompts.md) and [Preflight And Postflight](docs/preflight-postflight.md).
 
 ## Memory Model

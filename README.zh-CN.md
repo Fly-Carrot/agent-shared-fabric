@@ -188,6 +188,20 @@ hooks/log-phase.sh
 hooks/after-task.sh
 ```
 
+### 运行链条分工
+
+这套链条不是只靠 hook，也不是只靠 skill。它按职责分层：
+
+| 层级 | 负责什么 | 例子 |
+| --- | --- | --- |
+| **Prompt** | 让模型看见工作契约 | startup snippet、runtime bridge instructions |
+| **Hook** | 强制关键生命周期动作真的运行 | before-task、log-phase、after-task |
+| **Registry** | 告诉 runtime 有哪些能力可用 | MCP servers、skills、workflows、projects |
+| **MCP / Skill / Maestro** | 在 dispatch 阶段执行专业能力 | tools、本地 skills、subagents、orchestration |
+| **Memory lanes + receipts** | 跨 session、跨 runtime 保持连续性 | decisions、handoffs、open loops、process memory |
+
+所以连续协作的核心是：**hook 负责执行纪律，skill/MCP 负责专业能力，memory lanes 和 receipts 负责把状态传给下一轮 Agent**。
+
 任务结束后必须通过 **postflight** 写回：
 
 ```text
