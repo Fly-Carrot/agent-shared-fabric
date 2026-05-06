@@ -19,6 +19,8 @@ AgentSharedFabric/
   agent-fabric-implementation/      # customizable tool body
 ```
 
+The same structure is included as a template at `templates/layout/agent-shared-fabric.tree`. The initializer also copies it to `global-agent-fabric/LAYOUT.tree` so users can inspect the intended two-layer model after installation.
+
 The initializer writes:
 
 - governance rules
@@ -73,3 +75,11 @@ USER_QUESTION_PROFILE_JSON='{
 ```
 
 Only after this succeeds should an agent report `[SYNC_OK]`.
+
+## Use The Generic Startup Snippet
+
+For a new runtime session, use [Generic Startup Snippet](generic-startup-snippet.md) and replace:
+
+- `{AGENT_SHARED_FABRIC_ROOT}` with your generated `global-agent-fabric`
+- `{WORKSPACE}` with the current workspace
+- `{AGENT_NAME}` with the runtime id, such as `codex`, `gemini`, or `antigravity`

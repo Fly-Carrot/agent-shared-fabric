@@ -1,0 +1,17 @@
+AgentSharedFabric/
+  global-agent-fabric/                 # fixed governance core
+    rules/                             # global/runtime/project governance rules
+    hooks/                             # executable before/phase/after task wrappers
+    scripts/sync/                      # canonical preflight, sync_all, phase log, postflight scripts
+    sync/                              # receipts, phase logs, runtime map, boot sequence
+    memory/                            # memory lane schema and generated memory records
+    mcp/servers.yaml                   # registry of MCP servers, env references only
+    skills/sources.yaml                # registry of skill repositories
+    workflows/sources.yaml             # registry of workflow prompt directories
+    projects/registry.yaml             # registry of workspaces/project overlays
+
+  agent-fabric-implementation/         # customizable implementation body
+    skills/                            # curated/local/domain skill repos
+    mcp/                               # user-owned MCP server implementations
+    workflows/                         # reusable workflow prompts
+    agents/                            # custom subagents or orchestration adapters

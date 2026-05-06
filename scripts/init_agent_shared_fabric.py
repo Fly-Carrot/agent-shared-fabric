@@ -255,23 +255,45 @@ def write_text(path: Path, content: str, executable: bool = False) -> None:
 def render_startup_snippet(root: Path, workspace: Path) -> str:
     return f"""Use `{root}` as the canonical Agent Shared Fabric root.
 You are operating in workspace `{workspace}`.
+Load the runtime bridge from `{workspace}/.agents/<runtime>/` if it exists.
 
 Before substantial work, run the generated boot hook:
 
 `WORKSPACE="{workspace}" AGENT_NAME=<runtime> "{root / 'hooks/before-task.sh'}"`
 
-The hook runs preflight and sync-all. Report `[BOOT_OK]` only after it succeeds.
+If hooks are not installed yet, run the canonical scripts directly:
+
+`python3 "{root / 'scripts/sync/preflight_check.py'}" --global-root "{root}" --workspace "{workspace}" --agent <runtime>`
+`python3 "{root / 'scripts/sync/sync_all.py'}" --global-root "{root}" --workspace "{workspace}" --agent <runtime>`
+
+Report `[BOOT_OK]` only after the hook or both canonical scripts execute successfully.
+If boot fails, say so explicitly and do not claim shared context was loaded.
+
 Load global context first, runtime bridge second, project overlay third.
 
 For complex work, log exact phases with the generated phase hook:
 
 `WORKSPACE="{workspace}" AGENT_NAME=<runtime> "{root / 'hooks/log-phase.sh'}" <route|plan|review|dispatch|execute|report> "..."`
 
+Dispatch order:
+1. MCP first.
+2. Curated/local shared skills second.
+3. Indexed external skills through registry lookup only.
+4. Maestro/native subagents when available and appropriate.
+5. Manual script fallback.
+
+For medium or complex tasks, prefer Maestro orchestration when installed and keep execution human-gated.
+
 At the end, write back through the generated postflight hook:
 
 `WORKSPACE="{workspace}" AGENT_NAME=<runtime> SUMMARY="..." USER_QUESTION_PROFILE_JSON='{{...}}' "{root / 'hooks/after-task.sh'}"`
 
+Fallback direct script:
+
+`python3 "{root / 'scripts/sync/postflight_sync.py'}" --global-root "{root}" --workspace "{workspace}" --agent <runtime> --summary "..." --user-question-profile-json '{{...}}'`
+
 Report `[SYNC_OK]` only after postflight succeeds.
+Do not write directly to memory/*.ndjson or sync/*.ndjson; use canonical scripts or hooks.
 """
 
 
@@ -308,6 +330,7 @@ def main() -> int:
 
     template_map = {
         "templates/rules/global/agent-shared-fabric.md": root / "rules/global/agent-shared-fabric.md",
+        "templates/layout/agent-shared-fabric.tree": root / "LAYOUT.tree",
         "templates/hooks/before-task.sh": root / "hooks/before-task.sh",
         "templates/hooks/log-phase.sh": root / "hooks/log-phase.sh",
         "templates/hooks/after-task.sh": root / "hooks/after-task.sh",
