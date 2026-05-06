@@ -1,0 +1,11 @@
+version: 1
+sources:
+  - id: curated-current-workflow-skills
+    type: curated_skill_repo
+    path: /path/to/implementation/skills/curated/current-workflow
+  - id: local-domain-skills
+    type: skill_repo
+    path: /path/to/implementation/skills/local
+  - id: external-skill-index
+    type: indexed_external_repo
+    path: /path/to/external/skills

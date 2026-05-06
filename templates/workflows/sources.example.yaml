@@ -1,0 +1,8 @@
+version: 1
+sources:
+  - id: global-workflows
+    type: canonical_workflow_dir
+    path: /path/to/implementation/workflows/global
+  - id: runtime-workflow-mirror
+    type: generated_mirror_dir
+    path: ~/.gemini/antigravity/global_workflows

@@ -1,0 +1,10 @@
+version: 1
+lanes:
+  decision_log: memory/decision-log.ndjson
+  handoffs: memory/handoffs.ndjson
+  open_loops: memory/open-loops.ndjson
+  promoted_learnings: memory/promoted-learnings.ndjson
+  process_memory: external:mempalace
+  receipts: sync/receipts.ndjson
+  learning_receipts: sync/learning_receipts.ndjson
+  user_question_profiles: memory/user-question-profiles.ndjson

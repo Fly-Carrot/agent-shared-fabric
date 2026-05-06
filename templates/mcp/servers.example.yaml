@@ -1,0 +1,25 @@
+version: 1
+servers:
+  - id: context7
+    enabled: true
+    command: /bin/zsh
+    args:
+      - -lc
+      - source ~/.zshrc >/dev/null 2>&1 || true; exec npx -y @upstash/context7-mcp --api-key "$CONTEXT7_SECRET"
+    env_refs: []
+    scope: docs
+  - id: mempalace
+    enabled: true
+    command: /path/to/python
+    args:
+      - -m
+      - mempalace.mcp_server
+    env_refs: []
+    scope: memory
+  - id: maestro
+    enabled: true
+    command: node
+    args:
+      - /path/to/maestro/mcp/maestro-server.js
+    env_refs: []
+    scope: subagent-orchestration

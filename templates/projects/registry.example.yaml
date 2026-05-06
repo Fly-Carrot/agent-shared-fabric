@@ -1,0 +1,7 @@
+version: 1
+projects:
+  - id: example-project
+    name: Example Project
+    path: /path/to/workspace
+    overlay: rules/overlays/example-project.yaml
+    registered: true

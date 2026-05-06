@@ -1,0 +1,11 @@
+.DS_Store
+.env
+*.env
+*.log
+*.sqlite
+*.sqlite-*
+archive/
+memory/*.ndjson
+sync/*.ndjson
+**/secrets.yaml
+**/secrets.*.yaml

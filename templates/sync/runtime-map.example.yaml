@@ -1,0 +1,18 @@
+version: 1
+runtimes:
+  codex:
+    orchestration_mcp: maestro
+    preferred_bootstrap_order:
+      - rules/global/agent-shared-fabric.md
+      - projects/registry.yaml
+      - mcp/servers.yaml
+      - skills/sources.yaml
+  antigravity:
+    integration_mode: generated-mirror-plus-project-bridge
+    global_rule_source: rules/global/agent-shared-fabric.md
+    global_rule_mirror: ~/.gemini/GEMINI.md
+    mcp_source: mcp/servers.yaml
+    mcp_mirror: ~/.gemini/antigravity/mcp_config.json
+    project_bridge:
+      file: .agents/antigravity/ANTIGRAVITY.md
+      snippet: .agents/antigravity/startup-snippet.md
