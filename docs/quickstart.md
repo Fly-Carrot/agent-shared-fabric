@@ -21,6 +21,13 @@ AgentSharedFabric/
 
 The same structure is included as a template at `templates/governance-core/layout/agent-shared-fabric.tree`. The initializer also copies it to `global-agent-fabric/LAYOUT.tree` so users can inspect the intended two-layer model after installation.
 
+The initializer also copies two small validation documents:
+
+- `global-agent-fabric/STRUCTURE-CHECK.md`
+- `agent-fabric-implementation/STRUCTURE-CHECK.md`
+
+Use these to verify that the fixed governance harness and customizable extension body have not been accidentally merged.
+
 The initializer writes:
 
 - governance rules

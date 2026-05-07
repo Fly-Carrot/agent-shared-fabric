@@ -4,9 +4,12 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Runtime](https://img.shields.io/badge/runtimes-Codex%20%7C%20Gemini%20%7C%20Antigravity-blue)](#运行时契约)
 [![Hooks](https://img.shields.io/badge/hooks-preflight%20%7C%20phase%20%7C%20postflight-8A2BE2)](#实际如何运作)
+[![Harness](https://img.shields.io/badge/harness-agent%20governance-F59E0B)](#固定内核-vs-用户外挂)
 [![English](https://img.shields.io/badge/README-English-lightgrey)](README.md)
 
 **Agent Shared Fabric** 是一个面向多 Agent 协作的治理框架。它把分散的 AI 编程代理变成一个有 **共享记忆**、**共享工具路由**、**可审计 receipts**、**可重复任务纪律** 的工作系统。
+
+一句话：它是一个 **Agent 工作 harness**。它不替代 Codex、Gemini CLI、Antigravity、Maestro、MCP、skills 或 Fabric App，而是把这些 runtime 和工具包在一套稳定的工作契约中，避免上下文、纪律和工具路由悄悄丢失。
 
 它让 **Codex**、**Gemini CLI**、**Antigravity**、**Maestro**、**MCP 工具**、本地 skills，以及未来的 agent runtime **共享同一套工作契约**，而不需要被塞进一个巨大的单体应用里。
 
@@ -204,6 +207,8 @@ hooks/after-task.sh
 
 所以连续协作的核心是：**hook 负责执行纪律，skill/MCP 负责专业能力，memory lanes 和 receipts 负责把状态传给下一轮 Agent**。
 
+这就是我们说的 **harness**：它让 Agent 工作在执行前、执行中、执行后都可检查。**Preflight** 检查环境，**registries** 声明能力，**六阶段日志** 防止跳步，**postflight** 把工作沉淀成 memory lanes 和 receipts。
+
 任务结束后必须通过 **postflight** 写回：
 
 ```text
@@ -221,6 +226,7 @@ memory lanes -> next agent runtime
 
 - [Quickstart](docs/quickstart.md)
 - [Generic Startup Snippet](docs/generic-startup-snippet.md)
+- [Structure Validation](docs/structure-validation.md)
 - [Department Routing](docs/department-routing.md)
 - [Customization Guide](docs/customization-guide.md)
 - [Root Layout](templates/governance-core/layout/agent-shared-fabric.tree)

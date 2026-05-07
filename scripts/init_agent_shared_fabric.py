@@ -423,6 +423,7 @@ def main() -> int:
     template_map = {
         "templates/governance-core/rules/global/agent-shared-fabric.md": root / "rules/global/agent-shared-fabric.md",
         "templates/governance-core/layout/agent-shared-fabric.tree": root / "LAYOUT.tree",
+        "templates/governance-core/STRUCTURE-CHECK.md": root / "STRUCTURE-CHECK.md",
         "templates/governance-core/hooks/before-task.sh": root / "hooks/before-task.sh",
         "templates/governance-core/hooks/log-phase.sh": root / "hooks/log-phase.sh",
         "templates/governance-core/hooks/after-task.sh": root / "hooks/after-task.sh",
@@ -444,6 +445,15 @@ def main() -> int:
         else:
             writes.append({"path": str(dst), "status": "skipped", "reason": "exists"})
 
+    body_structure_check = body / "STRUCTURE-CHECK.md"
+    if args.force or not body_structure_check.exists():
+        if body_structure_check.exists() and args.backup:
+            writes.append({"path": str(body_structure_check), "status": "backed_up", "backup": str(backup_existing(body_structure_check))})
+        copy_template("templates/implementation-body/STRUCTURE-CHECK.md", body_structure_check)
+        writes.append({"path": str(body_structure_check), "status": "written"})
+    else:
+        writes.append({"path": str(body_structure_check), "status": "skipped", "reason": "exists"})
+
     writes.append(write_text(root / "scripts/sync/preflight_check.py", PRE_FLIGHT, executable=True, force=args.force, backup=args.backup))
     writes.append(write_text(root / "scripts/sync/sync_all.py", SYNC_ALL, executable=True, force=args.force, backup=args.backup))
     writes.append(write_text(root / "scripts/sync/log_task_phase.py", LOG_PHASE, executable=True, force=args.force, backup=args.backup))
@@ -458,6 +468,7 @@ This root is intentionally parallel to the governance root.
 
 Put heavy implementations here: skills, MCP servers, global workflows, and custom subagents.
 Reference them from the governance root through YAML registries instead of copying them into the governance brain.
+Use `STRUCTURE-CHECK.md` to validate that this body remains separate from the fixed governance harness.
 
 Recommended extension points:
 

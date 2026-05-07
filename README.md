@@ -4,9 +4,12 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Runtime](https://img.shields.io/badge/runtimes-Codex%20%7C%20Gemini%20%7C%20Antigravity-blue)](#runtime-contract)
 [![Hooks](https://img.shields.io/badge/hooks-preflight%20%7C%20phase%20%7C%20postflight-8A2BE2)](#how-it-actually-works)
+[![Harness](https://img.shields.io/badge/harness-agent%20governance-F59E0B)](#why-this-exists)
 [![中文](https://img.shields.io/badge/README-%E4%B8%AD%E6%96%87-red)](README.zh-CN.md)
 
 **Agent Shared Fabric** turns scattered AI coding agents into a coordinated working system with **shared memory**, **shared tool routing**, **auditable receipts**, and a **repeatable task discipline**.
+
+In one sentence: it is an **agent work harness**. It does not replace Codex, Gemini CLI, Antigravity, Maestro, MCP, skills, or Fabric App; it wraps them in a durable operating contract so they can cooperate without silently losing context.
 
 It gives **Codex**, **Gemini CLI**, **Antigravity**, **Maestro**, **MCP tools**, local skills, and future agent runtimes **one shared operating contract** without forcing them into one monolithic app.
 
@@ -34,6 +37,8 @@ Most agent systems fail in the quiet places:
 
 Agent Shared Fabric treats **coordination itself as infrastructure**.
 
+That is the **harness** claim: the framework makes agent work inspectable before, during, and after execution. **Preflight** checks the environment, **registries** declare available capabilities, **six-stage logging** prevents silent jumps, and **postflight** turns the work into durable memory lanes and receipts.
+
 ## Quick Start
 
 Create a local governance root plus a parallel implementation body:
@@ -56,6 +61,11 @@ AGENT_NAME=codex \
 Report `[BOOT_OK]` only after the hook succeeds. See [Quickstart](docs/quickstart.md) for the complete runnable path.
 
 The generated layout is documented in [Root Layout](templates/governance-core/layout/agent-shared-fabric.tree), and a runtime-agnostic startup prompt is available in [Generic Startup Snippet](docs/generic-startup-snippet.md).
+
+For file-structure validation, see [Structure Validation](docs/structure-validation.md). The generated roots include two short checklists:
+
+- `global-agent-fabric/STRUCTURE-CHECK.md`
+- `agent-fabric-implementation/STRUCTURE-CHECK.md`
 
 ## Two Separate Systems
 
