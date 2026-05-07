@@ -144,6 +144,8 @@ preflight -> sync_all -> context loading -> six-stage phase logging -> postfligh
 
 这些外挂能力通过 **registry 在 preflight/sync-all 阶段被发现**，不应该硬编码进治理内核。
 
+公开模板中的外挂示例默认 **不启用**。用户只有在替换为自己的命令路径和环境变量后，才应该启用 MCP、skills、workflows 或 subagents。
+
 ## 六阶段纪律
 
 Agent Shared Fabric 使用六个固定 phase key：

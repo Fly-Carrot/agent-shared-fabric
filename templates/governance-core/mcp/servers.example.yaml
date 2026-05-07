@@ -1,25 +1,28 @@
 version: 1
 servers:
-  - id: context7
-    enabled: true
-    command: /bin/zsh
+  - id: docs-context
+    enabled: false
+    command: /path/to/docs-mcp-server
     args:
-      - -lc
-      - source ~/.zshrc >/dev/null 2>&1 || true; exec npx -y @upstash/context7-mcp --api-key "$CONTEXT7_SECRET"
-    env_refs: []
+      - --stdio
+    env_refs:
+      - DOCS_MCP_TOKEN
     scope: docs
-  - id: mempalace
-    enabled: true
+    notes: "Example only. Replace with your own docs MCP server and enable explicitly."
+  - id: process-memory
+    enabled: false
     command: /path/to/python
     args:
       - -m
-      - mempalace.mcp_server
+      - your_memory_server.mcp_server
     env_refs: []
-    scope: memory
-  - id: maestro
-    enabled: true
+    scope: process-memory
+    notes: "MemPalace is a recommended backend, but the public template does not assume a local install."
+  - id: subagent-orchestrator
+    enabled: false
     command: node
     args:
-      - /path/to/maestro/mcp/maestro-server.js
+      - /path/to/orchestrator/mcp-server.js
     env_refs: []
     scope: subagent-orchestration
+    notes: "Maestro is a recommended backend, but users should wire their own installation path."

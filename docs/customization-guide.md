@@ -33,7 +33,7 @@ Edit `mcp/servers.yaml`:
 version: 1
 servers:
   - id: my-server
-    enabled: true
+    enabled: false
     command: /path/to/executable
     args: []
     env_refs:
@@ -41,7 +41,7 @@ servers:
     scope: my-capability
 ```
 
-Keep secrets in environment variables. Do not write API keys into YAML.
+Keep examples disabled until the command path and environment variables are verified. Keep secrets in environment variables. Do not write API keys into YAML.
 
 ## Add A Skill Repository
 
@@ -82,6 +82,8 @@ Declare it as an MCP server or runtime orchestration target, then route complex 
 MemPalace is recommended for process memory.
 
 Use it for detailed trial-and-error, dense debugging history, and temporal context that is too rich for a compact decision log.
+
+The core framework writes local process-memory receipts to `memory/mempalace-records.ndjson`. A MemPalace MCP server can consume or enrich that lane, but the governance core should still run when MemPalace is not installed.
 
 ## Security Rules
 

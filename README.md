@@ -154,6 +154,8 @@ This core should remain **stable across users and runtimes**.
 
 Custom extensions are discovered through **registries during preflight/sync-all**. They should **not** be hardcoded into the governance brain. See [Customization Guide](docs/customization-guide.md).
 
+Public templates keep extension examples **disabled by default**. Users enable their own MCP servers, skills, workflows, and subagents only after replacing placeholder commands and environment references.
+
 ## The Six Stages
 
 Agent Shared Fabric uses six exact stage keys:
@@ -236,7 +238,7 @@ Recommended lanes:
 - **Handoff**: what the next runtime or agent needs
 - **Open Loop**: unresolved risks or follow-up work
 - **Promoted Learning**: stable reusable learnings
-- **Process Memory**: detailed trial-and-error, often routed to systems like MemPalace
+- **Process Memory**: detailed trial-and-error, stored as local process-memory receipts and optionally routed to systems like MemPalace
 - **Receipt**: auditable proof that sync/write-back happened
 - **User Question Profile**: distilled user patterns, preferences, frictions, and recurring themes
 

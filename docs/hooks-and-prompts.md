@@ -42,11 +42,13 @@ during-task:
 
 after-task:
   postflight_sync.py
-  require user-question-profile payload
+  require user-question-profile payload for substantial/full-sync tasks
   emit [SYNC_OK] only if write-back succeeds
 ```
 
 Hooks reduce agent forgetfulness. Prompts are still needed because the model must understand why the hooks exist and how to interpret receipts.
+
+The generated `postflight_sync.py` remains usable for lightweight receipt-only writes. The stricter `after-task.sh` hook is the recommended substantial-task path: it requires `USER_QUESTION_PROFILE_JSON` so durable work can update the user's distilled question profile.
 
 ## Recommended Hybrid
 

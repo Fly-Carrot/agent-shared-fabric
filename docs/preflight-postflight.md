@@ -10,6 +10,7 @@ A preflight check validates:
 
 - the governance root exists
 - required rules and registries exist
+- registry files have the expected top-level shape, such as `version`, `servers`, or `sources`
 - hook templates are present in generated installs
 - the workspace exists
 - the runtime knows its agent name
@@ -48,6 +49,8 @@ report
 
 Do not invent synonyms if downstream tools expect these keys.
 
+The keys are a governance sequence, not a hard scheduler by default. The public hook validates the exact phase names. A stricter harness may enforce ordering, but the base framework keeps ordering advisory so runtimes can recover, retry, or log late phases without corrupting the receipt stream.
+
 ## Postflight
 
 Postflight answers another question:
@@ -71,4 +74,4 @@ Postflight writes structured records into lanes:
 - user-question profile
 - receipt
 
-A task is not fully synced until postflight succeeds.
+The public script supports lightweight receipt-only postflight for simple tasks. For substantial or full-sync tasks, use `hooks/after-task.sh`; it requires `USER_QUESTION_PROFILE_JSON` and only then should the runtime claim a complete synchronization.

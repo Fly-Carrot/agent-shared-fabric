@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import shutil
 from datetime import UTC, datetime
 from pathlib import Path
@@ -25,6 +24,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from pathlib import Path
 
 REQUIRED = [
@@ -41,6 +41,47 @@ REQUIRED = [
     "projects/registry.yaml",
 ]
 
+REGISTRY_EXPECTATIONS = {
+    "mcp/servers.yaml": ["version", "servers"],
+    "skills/sources.yaml": ["version", "sources"],
+    "workflows/sources.yaml": ["version", "sources"],
+    "memory/schema.yaml": ["version"],
+    "projects/registry.yaml": ["version"],
+    "sync/runtime-map.yaml": ["version"],
+}
+
+
+def has_top_level_key(text: str, key: str) -> bool:
+    return re.search(rf"^{re.escape(key)}\s*:", text, flags=re.MULTILINE) is not None
+
+
+def validate_registry_shape(root: Path) -> list[dict]:
+    errors = []
+    try:
+        import yaml  # type: ignore
+    except Exception:
+        yaml = None
+
+    for rel, required_keys in REGISTRY_EXPECTATIONS.items():
+        path = root / rel
+        if not path.exists():
+            continue
+        text = path.read_text(encoding="utf-8")
+        if "\t" in text:
+            errors.append({"path": rel, "error": "YAML files must not contain tab indentation"})
+        missing = [key for key in required_keys if not has_top_level_key(text, key)]
+        if missing:
+            errors.append({"path": rel, "error": f"missing top-level keys: {', '.join(missing)}"})
+        if yaml is not None:
+            try:
+                parsed = yaml.safe_load(text)
+            except Exception as exc:
+                errors.append({"path": rel, "error": f"YAML parse failed: {exc}"})
+                continue
+            if not isinstance(parsed, dict):
+                errors.append({"path": rel, "error": "YAML root must be a mapping"})
+    return errors
+
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Validate Agent Shared Fabric before substantial work.")
@@ -53,14 +94,17 @@ def main() -> int:
     root = args.global_root.expanduser().resolve()
     workspace = args.workspace.expanduser().resolve()
     missing = [item for item in REQUIRED if not (root / item).exists()]
+    registry_errors = validate_registry_shape(root)
+    ok = not missing and not registry_errors and workspace.exists()
     payload = {
-        "status": "ok" if not missing and workspace.exists() else "failed",
-        "status_marker": "[BOOT_OK]" if not missing and workspace.exists() else "[BOOT_FAILED]",
+        "status": "ok" if ok else "failed",
+        "status_marker": "[BOOT_OK]" if ok else "[BOOT_FAILED]",
         "global_root": str(root),
         "workspace": str(workspace),
         "agent": args.agent,
         "task_id": args.task_id,
         "missing_global_files": missing,
+        "registry_errors": registry_errors,
         "workspace_exists": workspace.exists(),
     }
     print(json.dumps(payload, indent=2))
@@ -75,6 +119,10 @@ SYNC_ALL = r'''#!/usr/bin/env python3
 from __future__ import annotations
 
 import argparse
+try:
+    import fcntl
+except Exception:  # pragma: no cover - Windows fallback
+    fcntl = None
 import json
 from datetime import UTC, datetime
 from pathlib import Path
@@ -82,8 +130,14 @@ from pathlib import Path
 
 def append_ndjson(path: Path, record: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("a", encoding="utf-8") as handle:
-        handle.write(json.dumps(record, ensure_ascii=False) + "\n")
+    lock_path = path.with_suffix(path.suffix + ".lock")
+    with lock_path.open("w", encoding="utf-8") as lock:
+        if fcntl is not None:
+            fcntl.flock(lock, fcntl.LOCK_EX)
+        with path.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(record, ensure_ascii=False) + "\n")
+        if fcntl is not None:
+            fcntl.flock(lock, fcntl.LOCK_UN)
 
 
 def main() -> int:
@@ -118,11 +172,27 @@ LOG_PHASE = r'''#!/usr/bin/env python3
 from __future__ import annotations
 
 import argparse
+try:
+    import fcntl
+except Exception:  # pragma: no cover - Windows fallback
+    fcntl = None
 import json
 from datetime import UTC, datetime
 from pathlib import Path
 
 PHASES = {"route", "plan", "review", "dispatch", "execute", "report"}
+
+
+def append_ndjson(path: Path, record: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lock_path = path.with_suffix(path.suffix + ".lock")
+    with lock_path.open("w", encoding="utf-8") as lock:
+        if fcntl is not None:
+            fcntl.flock(lock, fcntl.LOCK_EX)
+        with path.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(record, ensure_ascii=False) + "\n")
+        if fcntl is not None:
+            fcntl.flock(lock, fcntl.LOCK_UN)
 
 
 def main() -> int:
@@ -144,9 +214,7 @@ def main() -> int:
         "note": args.note,
     }
     target = args.global_root.expanduser().resolve() / "sync" / "task_phases.ndjson"
-    target.parent.mkdir(parents=True, exist_ok=True)
-    with target.open("a", encoding="utf-8") as handle:
-        handle.write(json.dumps(record, ensure_ascii=False) + "\n")
+    append_ndjson(target, record)
     print(json.dumps({"status": "written", "phase_key": args.phase, "target": str(target)}, indent=2))
     return 0
 
@@ -159,6 +227,10 @@ POSTFLIGHT = r'''#!/usr/bin/env python3
 from __future__ import annotations
 
 import argparse
+try:
+    import fcntl
+except Exception:  # pragma: no cover - Windows fallback
+    fcntl = None
 import json
 from datetime import UTC, datetime
 from pathlib import Path
@@ -168,7 +240,7 @@ LANE_FILES = {
     "handoff": "memory/handoffs.ndjson",
     "open_loop": "memory/open-loops.ndjson",
     "promoted_learning": "memory/promoted-learnings.ndjson",
-    "mempalace_record": "memory/process-memory.ndjson",
+    "mempalace_record": "memory/mempalace-records.ndjson",
 }
 
 REQUIRED_PROFILE_FIELDS = [
@@ -183,8 +255,14 @@ REQUIRED_PROFILE_FIELDS = [
 
 def append_ndjson(path: Path, record: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("a", encoding="utf-8") as handle:
-        handle.write(json.dumps(record, ensure_ascii=False) + "\n")
+    lock_path = path.with_suffix(path.suffix + ".lock")
+    with lock_path.open("w", encoding="utf-8") as lock:
+        if fcntl is not None:
+            fcntl.flock(lock, fcntl.LOCK_EX)
+        with path.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(record, ensure_ascii=False) + "\n")
+        if fcntl is not None:
+            fcntl.flock(lock, fcntl.LOCK_UN)
 
 
 def main() -> int:
@@ -245,11 +323,24 @@ def copy_template(src_rel: str, dst: Path) -> None:
     shutil.copy2(src, dst)
 
 
-def write_text(path: Path, content: str, executable: bool = False) -> None:
+def backup_existing(path: Path) -> Path:
+    timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    backup = path.with_name(f"{path.name}.{timestamp}.bak")
+    shutil.copy2(path, backup)
+    return backup
+
+
+def write_text(path: Path, content: str, executable: bool = False, *, force: bool = False, backup: bool = False) -> dict:
     path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists() and not force:
+        return {"path": str(path), "status": "skipped", "reason": "exists"}
+    backup_path = ""
+    if path.exists() and backup:
+        backup_path = str(backup_existing(path))
     path.write_text(content, encoding="utf-8")
     if executable:
         path.chmod(path.stat().st_mode | 0o111)
+    return {"path": str(path), "status": "written", "backup": backup_path}
 
 
 def render_startup_snippet(root: Path, workspace: Path) -> str:
@@ -303,6 +394,7 @@ def main() -> int:
     parser.add_argument("--implementation-root", type=Path, default=None, help="Parallel implementation body root. Defaults to a sibling named agent-fabric-implementation.")
     parser.add_argument("--workspace", type=Path, default=None, help="Optional workspace to bridge with AGENTS.md and startup snippet.")
     parser.add_argument("--force", action="store_true", help="Overwrite generated template files when they already exist.")
+    parser.add_argument("--backup", action="store_true", help="Back up existing files before overwriting with --force.")
     args = parser.parse_args()
 
     root = args.root.expanduser().resolve()
@@ -342,16 +434,22 @@ def main() -> int:
         "templates/governance-core/memory/schema.example.yaml": root / "memory/schema.yaml",
         "templates/governance-core/projects/registry.example.yaml": root / "projects/registry.yaml",
     }
+    writes = []
     for src_rel, dst in template_map.items():
         if args.force or not dst.exists():
+            if dst.exists() and args.backup:
+                writes.append({"path": str(dst), "status": "backed_up", "backup": str(backup_existing(dst))})
             copy_template(src_rel, dst)
+            writes.append({"path": str(dst), "status": "written"})
+        else:
+            writes.append({"path": str(dst), "status": "skipped", "reason": "exists"})
 
-    write_text(root / "scripts/sync/preflight_check.py", PRE_FLIGHT, executable=True)
-    write_text(root / "scripts/sync/sync_all.py", SYNC_ALL, executable=True)
-    write_text(root / "scripts/sync/log_task_phase.py", LOG_PHASE, executable=True)
-    write_text(root / "scripts/sync/postflight_sync.py", POSTFLIGHT, executable=True)
+    writes.append(write_text(root / "scripts/sync/preflight_check.py", PRE_FLIGHT, executable=True, force=args.force, backup=args.backup))
+    writes.append(write_text(root / "scripts/sync/sync_all.py", SYNC_ALL, executable=True, force=args.force, backup=args.backup))
+    writes.append(write_text(root / "scripts/sync/log_task_phase.py", LOG_PHASE, executable=True, force=args.force, backup=args.backup))
+    writes.append(write_text(root / "scripts/sync/postflight_sync.py", POSTFLIGHT, executable=True, force=args.force, backup=args.backup))
 
-    write_text(body / "README.md", f"""# Agent Fabric Implementation Body
+    writes.append(write_text(body / "README.md", f"""# Agent Fabric Implementation Body
 
 This root is intentionally parallel to the governance root.
 
@@ -368,23 +466,24 @@ Recommended extension points:
 - Add workflow prompt directories in `{root / 'workflows/sources.yaml'}`
 - Add custom subagents in this implementation root and route them through Maestro or the runtime bridge
 - Keep secrets in environment variables, not in registries
-""")
+""", force=args.force, backup=args.backup))
 
     if workspace:
-        write_text(workspace / "AGENTS.md", f"""# Agent Shared Fabric Workspace Bridge
+        writes.append(write_text(workspace / "AGENTS.md", f"""# Agent Shared Fabric Workspace Bridge
 
 Use `{root}` as the canonical Agent Shared Fabric root.
 Load this file as the project overlay after global and runtime context.
 
 Startup snippet: `.agents/agent-shared-fabric/startup-snippet.md`
-""")
-        write_text(workspace / ".agents/agent-shared-fabric/startup-snippet.md", render_startup_snippet(root, workspace))
+""", force=args.force, backup=args.backup))
+        writes.append(write_text(workspace / ".agents/agent-shared-fabric/startup-snippet.md", render_startup_snippet(root, workspace), force=args.force, backup=args.backup))
 
     summary = {
         "status": "ok",
         "governance_root": str(root),
         "implementation_root": str(body),
         "workspace": str(workspace) if workspace else None,
+        "writes": writes,
         "next_boot": [
             f"WORKSPACE=\"{workspace or '<workspace>'}\" AGENT_NAME=codex \"{root / 'hooks/before-task.sh'}\"",
         ],

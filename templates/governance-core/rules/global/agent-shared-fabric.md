@@ -32,6 +32,8 @@ execute
 report
 ```
 
+These keys are the recommended governance sequence. The base hook validates the vocabulary; stricter runtimes may enforce ordering, but the portable core keeps ordering advisory so agents can recover from retries or late reporting.
+
 ## Dispatch Order
 
 When a task needs external capability, choose in this order:
@@ -48,4 +50,4 @@ MCP servers, skills, workflows, custom subagents, and domain registries are cust
 
 MemPalace is strongly recommended for process memory. Maestro is strongly recommended for explicit subagent orchestration. Neither is required for the core contract to run.
 
-At the end of substantial work, run `hooks/after-task.sh` when available, include user-question-profile distillation, and report `[SYNC_OK]` only after success.
+At the end of substantial work, run `hooks/after-task.sh` when available, include user-question-profile distillation, and report `[SYNC_OK]` only after success. Lightweight receipt-only postflight is allowed for trivial work, but it is not a full synchronization record.

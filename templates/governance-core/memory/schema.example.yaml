@@ -4,7 +4,15 @@ lanes:
   handoffs: memory/handoffs.ndjson
   open_loops: memory/open-loops.ndjson
   promoted_learnings: memory/promoted-learnings.ndjson
-  process_memory: external:mempalace
+  process_memory_receipts: memory/mempalace-records.ndjson
+  process_memory_backend: optional:external:mempalace
   receipts: sync/receipts.ndjson
   learning_receipts: sync/learning_receipts.ndjson
   user_question_profiles: memory/user-question-profiles.ndjson
+memory_tracks:
+  stable_technical_route:
+    primary_mechanism: "promoted_learnings"
+    bridge_file: "memory/promoted-learnings.ndjson"
+  episodic_detail:
+    primary_mechanism: "optional:mempalace"
+    bridge_file: "memory/mempalace-records.ndjson"
